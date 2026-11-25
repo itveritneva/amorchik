@@ -76,6 +76,23 @@
   .bubble p { margin: 0 0 8px; }
   .bubble p:last-child { margin: 0; }
   .bubble .time { display: block; text-align: right; font-size: 11px; opacity: .6; margin-top: 6px; }
+  .days { display: flex; gap: 6px; background: var(--soft); border-radius: 999px; padding: 4px; margin-bottom: 14px; }
+  .days button { flex: 1; border: 0; background: transparent; color: var(--muted); font: 600 13px/1 Manrope, sans-serif; padding: 9px 6px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
+  .days button[aria-selected=true] { background: var(--surface); color: var(--accent); box-shadow: 0 2px 8px -2px rgba(90,60,140,.25); }
+  .chat { display: flex; flex-direction: column; gap: 8px; min-height: 290px; }
+  .bubble.me { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-radius: 18px 18px 6px 18px; padding: 9px 14px; font-weight: 600; font-size: 14px; }
+  .bubble.bot { align-self: flex-start; max-width: 100%; }
+  .bubble ul { margin: 4px 0 0; padding-left: 18px; }
+  .bubble li { margin-bottom: 4px; }
+  .pop { animation: pop .25s ease-out; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .kb { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .kb button { border: 1px solid var(--line); background: var(--tg); color: var(--accent); font: 600 14px/1.2 Manrope, sans-serif; padding: 11px 8px; border-radius: 12px; cursor: pointer; transition: background .15s, transform .1s; }
+  .kb button:hover { background: var(--soft); }
+  .kb button:active { transform: scale(.98); }
+  .kb button.wide { grid-column: 1 / -1; }
+  .try { text-align: center; font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+  @media (prefers-reduced-motion: reduce) { .pop { animation: none; } }
   .tag { display: inline-block; background: var(--soft); color: var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
 
   section { padding: 64px 0; }
@@ -148,16 +165,20 @@
     <div class="phone" aria-label="Пример утреннего сообщения">
       <div class="chat-head">
         <div class="avatar"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 24s-8-4.9-8-10.3a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3C24 19.1 16 24 16 24z" fill="#fff"/></svg></div>
-        <div><b>Аморчик</b><span>бот</span></div>
+        <div><b>Аморчик</b><span>пишет партнёру каждое утро в 8:00</span></div>
       </div>
-      <div class="bubble">
-        <span class="tag">День 12 · скоро овуляция</span>
-        <p>Доброе утро. Сон 7 ч 40 мин, восстановление хорошее, энергии сегодня много.</p>
-        <p><b>Сделай:</b> предложи вечером прогулку вдвоём, без телефонов.</p>
-        <p><b>Лучше не надо:</b> поздних планов и тяжёлых разговоров.</p>
-        <p>Овуляция ожидается через 1–2 дня.</p>
-        <span class="time">08:00</span>
+      <div class="days" role="tablist" aria-label="Выбери день цикла">
+        <button type="button" role="tab" data-day="d2">День 2</button>
+        <button type="button" role="tab" data-day="d13">День 13</button>
+        <button type="button" role="tab" data-day="d25">День 25</button>
       </div>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <div class="kb" id="kb">
+        <button type="button" data-q="plan">План на вечер</button>
+        <button type="button" data-q="say">Что ей сказать</button>
+        <button type="button" data-q="dont" class="wide">Чего точно не делать</button>
+      </div>
+      <p class="try">Нажми на кнопки, так это выглядит у партнёра</p>
     </div>
   </div>
 </div>
@@ -253,6 +274,69 @@
   </footer>
 </div>
 
+<script>
+(function () {
+  var DAYS = {
+    d2: {
+      tag: "День 2 · менструация",
+      body: "<p>Доброе утро. Сон 6 ч 10 мин, восстановление низкое. Сегодня у неё ноль ресурса, и это нормально.</p><p><b>Сделай сегодня:</b></p><ul><li>Принеси грелку на живот. Она скажет спасибо без слов.</li><li>Возьми на себя весь быт: посуду, ужин, магазин.</li></ul>",
+      plan: "Плед, грелка, её любимый сериал. Ужин закажи сам и не спрашивай, что она хочет: просто принеси что-то тёплое. Телефоны в другую комнату к 21:00.",
+      say: "«Я здесь. Тебе сегодня ничего не нужно делать». И правда ничего не требуй.",
+      dont: "<ul><li>Не трогай живот и грудь, сейчас очень больно.</li><li>Не проси решений и долгих разговоров.</li><li>Не обижайся на молчание, она сейчас внутри себя.</li></ul>"
+    },
+    d13: {
+      tag: "День 13 · пик овуляции",
+      body: "<p>Доброе утро. Сон 7 ч 40 мин, энергии много. Самый фертильный день цикла: она тянется к тебе, магнетизм на максимуме.</p><p><b>Сделай сегодня:</b></p><ul><li>Скажи, что она красивая. Сегодня она в это поверит.</li><li>Освободи вечер. Это самый важный день цикла.</li></ul>",
+      plan: "Свидание дома: ужин, который готовишь ты, свечи, её плейлист. Без спешки и без телефонов: ей важно твоё присутствие, а не скорость.",
+      say: "Не просто «ты красивая», а конкретно: что именно тебя в ней сегодня цепляет. Такое она запомнит надолго.",
+      dont: "<ul><li>Не пропадай сегодня в работе и в телефоне.</li><li>Не торопись. Грудь сейчас особенно чувствительная, будь нежнее.</li></ul>"
+    },
+    d25: {
+      tag: "День 25 · ПМС",
+      body: "<p>Доброе утро. Прогестерон падает: тяжесть, слёзы на ровном месте, грудь наливается. Если она злится, это не про тебя.</p><p><b>Сделай сегодня:</b></p><ul><li>Обними без слов, как только придёшь домой.</li><li>Принеси шоколад или её любимое без повода.</li></ul>",
+      plan: "Тихий вечер дома. Наполни ей тёплую ванну: соль, свечи, тишина. А сам возьми на себя всё, что можно взять.",
+      say: "«Я с тобой». А дальше просто слушай, без советов. Ей нужно выговориться, а не решение.",
+      dont: "<ul><li>Не трогай грудь, она болит.</li><li>Не спорь по мелочам: сейчас любая мелочь ощущается как большая.</li><li>Не обсуждай деньги и планы, не комментируй её настроение и тело.</li></ul>"
+    }
+  };
+  var LABELS = { plan: "План на вечер", say: "Что ей сказать", dont: "Чего точно не делать" };
+  var chat = document.getElementById("chat");
+  var tabs = document.querySelectorAll(".days button");
+  var current = "d25";
+
+  function bubble(cls, html, withTime) {
+    var el = document.createElement("div");
+    el.className = "bubble pop " + cls;
+    el.innerHTML = html + (withTime ? '<span class="time">08:00</span>' : "");
+    chat.appendChild(el);
+    return el;
+  }
+
+  function show(day) {
+    current = day;
+    tabs.forEach(function (t) { t.setAttribute("aria-selected", t.dataset.day === day ? "true" : "false"); });
+    chat.innerHTML = "";
+    var d = DAYS[day];
+    bubble("bot", '<span class="tag">' + d.tag + "</span>" + d.body, true);
+  }
+
+  tabs.forEach(function (t) { t.addEventListener("click", function () { show(t.dataset.day); }); });
+
+  document.querySelectorAll(".kb button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var q = b.dataset.q, d = DAYS[current];
+      while (chat.children.length > 1) chat.removeChild(chat.lastChild);
+      bubble("me", LABELS[q]);
+      setTimeout(function () {
+        var html = d[q].charAt(0) === "<" ? d[q] : "<p>" + d[q] + "</p>";
+        bubble("bot", html);
+      }, 350);
+    });
+  });
+
+  show(current);
+})();
+</script>
 <script>
 (function () {
   var SUPABASE_URL = "https://vbbzxqdjhdgtiagdoumx.supabase.co";
