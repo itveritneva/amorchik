@@ -210,13 +210,13 @@
     <div>
       <h2>Ранний доступ</h2>
       <p>Сейчас Аморчик работает для нашей семьи. Я собираю версию для всех, и на старте она будет бесплатной.</p>
-      <p>Оставь контакт, и я напишу, как только можно будет подключиться. Никакого спама: одно сообщение о запуске.</p>
+      <p>Оставь email, и я напишу, как только можно будет подключиться. Никакого спама: одно сообщение о запуске.</p>
     </div>
 
     <form id="wl" novalidate>
       <div class="field">
-        <label for="contact">Email или Telegram</label>
-        <input type="text" id="contact" name="contact" autocomplete="email" placeholder="you@mail.com или @username" required maxlength="120">
+        <label for="contact">Email</label>
+        <input type="email" id="contact" name="contact" autocomplete="email" inputmode="email" placeholder="you@mail.com" required maxlength="120">
       </div>
       <div class="field">
         <label for="name">Как тебя зовут <span class="hint">· необязательно</span></label>
@@ -237,7 +237,7 @@
       <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
       <label class="check">
         <input type="checkbox" id="consent" required>
-        <span>Да, пусть Ирина напишет мне о запуске Аморчика. Контакт не передаётся третьим лицам, удалить его можно в любой момент.</span>
+        <span>Да, пусть Ирина напишет мне о запуске Аморчика. Email не передаётся третьим лицам, удалить его можно в любой момент.</span>
       </label>
       <button class="btn" type="submit" id="submit">Записаться</button>
       <div class="status" id="status" role="status" aria-live="polite"></div>
@@ -248,7 +248,7 @@
 <div class="wrap">
   <footer>
     <p>Аморчик — не медицинский сервис и не заменяет врача. Подсказки по фазам цикла общие и не являются медицинской рекомендацией.</p>
-    <p>Данные формы: контакт, а также имя и этап, если они указаны. Нужны только для того, чтобы сообщить о запуске. Чтобы удалить свои данные, напиши Ирине в директ в Instagram.</p>
+    <p>Данные формы: email, а также имя и этап, если они указаны. Нужны только для того, чтобы сообщить о запуске. Чтобы удалить свои данные, напиши Ирине в директ в Instagram.</p>
     <p>© 2026 Аморчик</p>
   </footer>
 </div>
@@ -270,21 +270,20 @@
     statusEl.className = "status" + (kind ? " " + kind : "");
   }
 
-  function validContact(v) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) || /^@?[A-Za-z0-9_]{5,32}$/.test(v);
+  function validEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
   }
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     if (form.website.value) { setStatus("Готово! Я напишу тебе, как только всё будет готово.", "ok"); return; }
 
-    var contact = form.contact.value.trim();
+    var contact = form.contact.value.trim().toLowerCase();
     var name = form.name.value.trim();
     var stage = form.stage.value || null;
 
-    if (!validContact(contact)) { setStatus("Проверь email или Telegram: например, anna@mail.com или @anna_k.", "err"); form.contact.focus(); return; }
+    if (!validEmail(contact)) { setStatus("Проверь email: например, anna@mail.com", "err"); form.contact.focus(); return; }
     if (!form.consent.checked) { setStatus("Отметь согласие, чтобы я могла тебе написать.", "err"); return; }
-    if (/^[A-Za-z0-9_]{5,32}$/.test(contact)) contact = "@" + contact;
 
     btn.disabled = true;
     setStatus("Отправляю…");
