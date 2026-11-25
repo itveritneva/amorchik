@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аморчик — fertility companion для двоих</title>
+<meta name="description" content="Каждое утро партнёр знает, какой у тебя день цикла и чем тебя поддержать. Ранний доступ — бесплатно.">
+<meta property="og:title" content="Аморчик — fertility companion для двоих">
+<meta property="og:description" content="Каждое утро партнёр знает, какой у тебя день цикла и чем тебя поддержать.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f6efe7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23c4694a'/%3E%3Cpath d='M16 23s-7-4.3-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 23 14c0 4.7-7 9-7 9z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6efe7;
+    --surface: #fffaf4;
+    --ink: #2b211c;
+    --muted: #6f6158;
+    --line: #e6d9cb;
+    --accent: #c4694a;
+    --accent-ink: #ffffff;
+    --soft: #f0e0d3;
+    --tg: #e9f2fb;
+    --tg-ink: #1f2d3a;
+    --ok: #3f7a56;
+    --err: #b23b2e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1b1613;
+      --surface: #241e1a;
+      --ink: #f3e9df;
+      --muted: #b5a598;
+      --line: #3a302a;
+      --accent: #e08a6b;
+      --accent-ink: #1b1613;
+      --soft: #2e2520;
+      --tg: #1f2a35;
+      --tg-ink: #e3edf6;
+      --ok: #7cc39a;
+      --err: #f08a7c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 17px/1.6 Inter, system-ui, -apple-system, sans-serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  h1, h2, h3 { font-family: Fraunces, Georgia, serif; font-weight: 600; line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(36px, 7vw, 60px); }
+  h2 { font-size: clamp(28px, 4.5vw, 40px); margin-bottom: 16px; }
+  h3 { font-size: 20px; margin-bottom: 6px; }
+  p { margin: 0 0 14px; }
+  a { color: var(--accent); }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; text-decoration: none; color: var(--ink); }
+  .logo svg { width: 30px; height: 30px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px;
+    padding: 14px 26px; font: 600 16px/1 Inter, sans-serif; text-decoration: none; cursor: pointer;
+    transition: transform .15s ease, opacity .15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: .6; cursor: default; transform: none; }
+  .btn.small { padding: 10px 18px; font-size: 14px; }
+
+  .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 40px 0 72px; }
+  .eyebrow { display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  .lead { font-size: 19px; color: var(--muted); margin: 20px 0 28px; max-width: 34em; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+
+  .phone {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 28px;
+    padding: 18px; box-shadow: 0 30px 60px -30px rgba(60, 30, 15, .35);
+  }
+  .chat-head { display: flex; align-items: center; gap: 10px; padding: 4px 4px 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; }
+  .avatar svg { width: 20px; height: 20px; }
+  .chat-head b { display: block; font-size: 15px; }
+  .chat-head span { font-size: 12px; color: var(--muted); }
+  .bubble { background: var(--tg); color: var(--tg-ink); border-radius: 18px 18px 18px 6px; padding: 14px 16px; font-size: 15px; line-height: 1.5; }
+  .bubble p { margin: 0 0 8px; }
+  .bubble p:last-child { margin: 0; }
+  .bubble .time { display: block; text-align: right; font-size: 11px; opacity: .6; margin-top: 6px; }
+  .tag { display: inline-block; background: var(--soft); color: var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+
+  section { padding: 64px 0; }
+  .story { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .story .wrap { max-width: 720px; }
+  .story p { font-size: 18px; }
+  .sign { font-family: Fraunces, Georgia, serif; font-size: 20px; margin-top: 18px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 28px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+  .num { font-family: Fraunces, Georgia, serif; font-size: 32px; color: var(--accent); line-height: 1; margin-bottom: 12px; }
+  .card p { color: var(--muted); margin: 0; font-size: 16px; }
+
+  .gets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 32px; margin-top: 24px; padding: 0; list-style: none; }
+  .gets li { padding-left: 28px; position: relative; }
+  .gets li::before { content: ""; position: absolute; left: 0; top: 9px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); opacity: .85; }
+
+  .join { background: var(--soft); }
+  .join-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: start; }
+  form { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 28px; }
+  label { display: block; font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+  .field { margin-bottom: 18px; }
+  .hint { font-weight: 400; color: var(--muted); }
+  input[type=text], select {
+    width: 100%; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--bg); color: var(--ink); font: 400 16px Inter, sans-serif;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); margin: 4px 0 20px; font-weight: 400; }
+  .check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+  .hp { position: absolute; left: -9999px; }
+  .status { margin-top: 14px; font-size: 15px; min-height: 1.4em; }
+  .status.ok { color: var(--ok); font-weight: 600; }
+  .status.err { color: var(--err); }
+  form .btn { width: 100%; }
+
+  footer { padding: 40px 0 56px; font-size: 14px; color: var(--muted); }
+  footer p { margin-bottom: 10px; max-width: 46em; }
+
+  @media (max-width: 820px) {
+    .hero, .join-grid { grid-template-columns: 1fr; gap: 36px; }
+    .hero { padding-top: 16px; }
+    .steps { grid-template-columns: 1fr; }
+    .gets { grid-template-columns: 1fr; }
+    section { padding: 48px 0; }
+    form { padding: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--accent)"/><path d="M16 23s-7-4.3-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 23 14c0 4.7-7 9-7 9z" fill="#fff"/></svg>
+      Аморчик
+    </a>
+    <a class="btn small" href="#join">Ранний доступ</a>
+  </header>
+
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Fertility companion для двоих</span>
+      <h1>Чтобы партнёр знал, что с тобой происходит, без лишних объяснений</h1>
+      <p class="lead">Каждое утро Аморчик пишет твоему партнёру в Telegram: какой сегодня день цикла, как ты спала и что поможет тебе прямо сегодня.</p>
+      <a class="btn" href="#join">Хочу ранний доступ</a>
+      <p class="note">Бесплатно на старте. Пишу первым, кто оставит контакт.</p>
+    </div>
+
+    <div class="phone" aria-label="Пример утреннего сообщения">
+      <div class="chat-head">
+        <div class="avatar"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 24s-8-4.9-8-10.3a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3C24 19.1 16 24 16 24z" fill="#fff"/></svg></div>
+        <div><b>Аморчик</b><span>бот</span></div>
+      </div>
+      <div class="bubble">
+        <span class="tag">День 12 · скоро овуляция</span>
+        <p>Доброе утро. Сон 7 ч 40 мин, восстановление хорошее, энергии сегодня много.</p>
+        <p><b>Сделай:</b> предложи вечером прогулку вдвоём, без телефонов.</p>
+        <p><b>Лучше не надо:</b> поздних планов и тяжёлых разговоров.</p>
+        <p>Овуляция ожидается через 1–2 дня.</p>
+        <span class="time">08:00</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="story">
+  <div class="wrap">
+    <h2>Почему я его сделала</h2>
+    <p>Два года мы с мужем пытались забеременеть. Была потеря на десятой неделе, переезды, анализы, а потом ЭКО и одна-единственная попытка, которая получилась.</p>
+    <p>Самым тяжёлым оказались не уколы, а каждый день объяснять, почему сегодня у меня нет сил, а завтра всё снова хорошо. Поэтому я сделала бота для мужа: он сам каждое утро присылает ему, где я сейчас по циклу и как меня поддержать.</p>
+    <p>Аморчик помогал нам весь этот путь. Теперь я хочу сделать его для всех, кто проходит то же самое.</p>
+    <p class="sign">— Ирина</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Как это работает</h2>
+    <div class="steps">
+      <div class="card">
+        <div class="num">1</div>
+        <h3>Ты отмечаешь цикл</h3>
+        <p>Достаточно отметить начало цикла. С Oura Ring сон, восстановление и температура подтянутся сами.</p>
+      </div>
+      <div class="card">
+        <div class="num">2</div>
+        <h3>Партнёр подключается</h3>
+        <p>Он открывает бота в Telegram, и всё. Отдельное приложение не нужно.</p>
+      </div>
+      <div class="card">
+        <div class="num">3</div>
+        <h3>Каждое утро сводка</h3>
+        <p>В 8:00 фаза, настроение, энергия и конкретная подсказка на день. Перед овуляцией придёт напоминание.</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top:56px">Что получает партнёр</h2>
+    <ul class="gets">
+      <li>День и фазу цикла простыми словами</li>
+      <li>Чего ждать сегодня по настроению и энергии</li>
+      <li>Что сделать сегодня и чего лучше избегать</li>
+      <li>Прогноз на 7 дней вперёд</li>
+      <li>Напоминание за 1–2 дня до овуляции</li>
+      <li>Ни одного вопроса «а что с тобой?»</li>
+    </ul>
+  </div>
+</section>
+
+<section class="join" id="join">
+  <div class="wrap join-grid">
+    <div>
+      <h2>Ранний доступ</h2>
+      <p>Сейчас Аморчик работает для нашей семьи. Я собираю версию для всех, и на старте она будет бесплатной.</p>
+      <p>Оставь контакт, и я напишу, как только можно будет подключиться. Никакого спама: одно сообщение о запуске.</p>
+    </div>
+
+    <form id="wl" novalidate>
+      <div class="field">
+        <label for="contact">Email или Telegram</label>
+        <input type="text" id="contact" name="contact" autocomplete="email" placeholder="you@mail.com или @username" required maxlength="120">
+      </div>
+      <div class="field">
+        <label for="name">Как тебя зовут <span class="hint">· необязательно</span></label>
+        <input type="text" id="name" name="name" autocomplete="given-name" maxlength="60">
+      </div>
+      <div class="field">
+        <label for="stage">Где ты сейчас <span class="hint">· необязательно</span></label>
+        <select id="stage" name="stage">
+          <option value="">Не хочу говорить</option>
+          <option value="trying">Пробуем сами</option>
+          <option value="tests">Обследования</option>
+          <option value="ivf">ЭКО</option>
+          <option value="pregnant">Уже беременна</option>
+          <option value="partner">Я партнёр</option>
+          <option value="other">Другое</option>
+        </select>
+      </div>
+      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="check">
+        <input type="checkbox" id="consent" required>
+        <span>Да, пусть Ирина напишет мне о запуске Аморчика. Контакт не передаётся третьим лицам, удалить его можно в любой момент.</span>
+      </label>
+      <button class="btn" type="submit" id="submit">Записаться</button>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>
+    <p>Аморчик — не медицинский сервис и не заменяет врача. Подсказки по фазам цикла общие и не являются медицинской рекомендацией.</p>
+    <p>Данные формы: контакт, а также имя и этап, если они указаны. Нужны только для того, чтобы сообщить о запуске. Чтобы удалить свои данные, напиши Ирине в директ в Instagram.</p>
+    <p>© 2026 Аморчик</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SUPABASE_URL = "https://vbbzxqdjhdgtiagdoumx.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_sIOVQ5cV5zEMLcAa2tmqSA_F3pvKyfy";
+  var TABLE = "amorchik_waitlist";
+
+  var form = document.getElementById("wl");
+  var statusEl = document.getElementById("status");
+  var btn = document.getElementById("submit");
+  var src = null;
+  try { src = (new URLSearchParams(location.search).get("src") || "").slice(0, 40) || null; } catch (e) {}
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text;
+    statusEl.className = "status" + (kind ? " " + kind : "");
+  }
+
+  function validContact(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) || /^@?[A-Za-z0-9_]{5,32}$/.test(v);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (form.website.value) { setStatus("Готово! Я напишу тебе, как только всё будет готово.", "ok"); return; }
+
+    var contact = form.contact.value.trim();
+    var name = form.name.value.trim();
+    var stage = form.stage.value || null;
+
+    if (!validContact(contact)) { setStatus("Проверь email или Telegram: например, anna@mail.com или @anna_k.", "err"); form.contact.focus(); return; }
+    if (!form.consent.checked) { setStatus("Отметь согласие, чтобы я могла тебе написать.", "err"); return; }
+    if (/^[A-Za-z0-9_]{5,32}$/.test(contact)) contact = "@" + contact;
+
+    btn.disabled = true;
+    setStatus("Отправляю…");
+
+    fetch(SUPABASE_URL + "/rest/v1/" + TABLE, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({ contact: contact, name: name || null, stage: stage, source: src, consent: true })
+    }).then(function (r) {
+      if (r.ok || r.status === 409) {
+        form.reset();
+        setStatus(r.status === 409 ? "Ты уже в списке, я напишу тебе." : "Готово! Я напишу тебе, как только всё будет готово.", "ok");
+      } else {
+        throw new Error("HTTP " + r.status);
+      }
+    }).catch(function () {
+      setStatus("Не получилось отправить. Попробуй ещё раз через минуту.", "err");
+    }).finally(function () {
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>
